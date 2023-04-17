@@ -1,0 +1,8 @@
+{
+    "table":  "MyTable",
+    "database":  "MyDatabase",
+    "data":  [
+
+             ],
+    "lastSuccessfulCommand":  "seeding data"
+}
