@@ -36,7 +36,10 @@ if ($state.lastSuccessfulCommand -match "sitemanager-api-build") {
     PrintYellow "Building Site Manager api........" 
    dotnet build .\SiteManager\SiteManager.API\SiteManager.API.csproj
    if ($LASTEXITCODE -ne 0) {
-   SetDefaultLocation("Error in SiteManager Build.",$state)
+    Write-Error "SiteManager api build failed"
+    Set-Location "C:\Users\balti\Desktop\quanika-cloud-app Scripts\powershell"
+    $state | ConvertTo-Json | Set-Content -Path "state.json"
+    exit 1
 }
     $state.lastSuccessfulCommand = "accesscontrol-api-build"
 }
@@ -49,7 +52,10 @@ if ($state.lastSuccessfulCommand -match "accesscontrol-api-build") {
     PrintYellow "Building AccessControl api........" 
    dotnet build .\AccessControl\AccessControl.API\AccessControl.API.csproj
    if ($LASTEXITCODE -ne 0) {
-    SetDefaultLocation("Error in accesscontrol Build.",$state)
+    Write-Error "accessControl api build failed"
+    Set-Location "C:\Users\balti\Desktop\quanika-cloud-app Scripts\powershell"
+    $state | ConvertTo-Json | Set-Content -Path "state.json"
+    exit 1
 }
       $state.lastSuccessfulCommand = "executor-api-build"
 }
@@ -61,7 +67,10 @@ if ($state.lastSuccessfulCommand -match "executor-api-build") {
     PrintYellow "Building executor-api........" 
     dotnet build .\Q.ApiExecutor\Q.ApiExecutor.csproj
     if ($LASTEXITCODE -ne 0) {
-        SetDefaultLocation("Error in executor api Build.",$state)
+        Write-Error "executor api build failed"
+        Set-Location "C:\Users\balti\Desktop\quanika-cloud-app Scripts\powershell"
+        $state | ConvertTo-Json | Set-Content -Path "state.json"
+        exit 1
     }
     $state.lastSuccessfulCommand = "eventfetch-api-build"
 }
@@ -72,8 +81,11 @@ if ($state.lastSuccessfulCommand -match "eventfetch-api-build") {
     PrintYellow "building eventfetch-api........" 
     dotnet build .\Q.EventFetch\Q.EventFetch.csproj 
     if ($LASTEXITCODE -ne 0) {
-        SetDefaultLocation("Error in eventFetch api Build.",$state)
-    }   
+        Write-Error "event fetch api build failed"
+        Set-Location "C:\Users\balti\Desktop\quanika-cloud-app Scripts\powershell"
+        $state | ConvertTo-Json | Set-Content -Path "state.json"
+        exit 1
+    }  
     $state.lastSuccessfulCommand = "database-update-sitemanager"
 }
 
@@ -84,7 +96,10 @@ if ($state.lastSuccessfulCommand -match "database-update-sitemanager") {
     Set-Location "D:\Project\src\Services\SiteManager\SiteManager.API"
    dotnet ef database update 
    if ($LASTEXITCODE -ne 0) {
-    SetDefaultLocation("Error in sitemanage database update.",$state)
+    Write-Error "data base update sitemanager failed"
+    Set-Location "C:\Users\balti\Desktop\quanika-cloud-app Scripts\powershell"
+    $state | ConvertTo-Json | Set-Content -Path "state.json"
+    exit 1
 }
     $state.lastSuccessfulCommand = "sitemanager-seeding-data"
 }
@@ -97,7 +112,10 @@ if ($state.lastSuccessfulCommand -match "sitemanager-seeding-data") {
     
     PrintYellow "sitemanager-seeding-data......." 
     if ($LASTEXITCODE -ne 0) {
-        SetDefaultLocation("Error in SiteManager seeding data.",$state)
+        Write-Error "sitemanager-seeding-data failed"
+        Set-Location "C:\Users\balti\Desktop\quanika-cloud-app Scripts\powershell"
+        $state | ConvertTo-Json | Set-Content -Path "state.json"
+        exit 1
     }
     $state.lastSuccessfulCommand = "accesscontrol-db-update"
     }
@@ -108,9 +126,12 @@ if ($state.lastSuccessfulCommand -match "accesscontrol-db-update") {
     PrintYellow "accesscontrol-db-update in progress......." 
     Set-Location "D:\Project\src\Services\AccessControl\AccessControl.Persistence"
     dotnet ef database update --context QDbContext --startup-project ../AccessControl.API -- --environment Production --verbose
-   if ($LASTEXITCODE -ne 0) {
-    SetDefaultLocation("Error in accesscontorl db update",$state)
-}
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Accesscontrol-db-update failed."
+        Set-Location "C:\Users\balti\Desktop\quanika-cloud-app Scripts\powershell"
+        $state | ConvertTo-Json | Set-Content -Path "state.json"
+        exit 1
+    }
     $state.lastSuccessfulCommand = "accesscontrol-outboxdb-update"
 }
 
@@ -208,7 +229,9 @@ if ($state.lastSuccessfulCommand -match "docker-compose-portainer") {
 
     # Docker Compose Portainer
     if ($state.lastSuccessfulCommand -match "docker-compose-cache") {
-        PrintYellow "Docker Compose cache........" 
+        PrintYellow "Docker Compose cache........"
+    Set-Location $config.SrcPath
+
         docker-compose -f .\docker-compose.yml -f .\docker-compose.override.yml up cache  -d --build
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Failed to compose docker cache."
@@ -223,6 +246,8 @@ if ($state.lastSuccessfulCommand -match "docker-compose-portainer") {
       # Docker Compose Rabbit MQ
       if ($state.lastSuccessfulCommand -match "docker-compose-rabbitmq") {
         PrintYellow "Docker Compose RabbitMQ........" 
+        Set-Location $config.SrcPath
+
         docker-compose -f .\docker-compose.yml -f .\docker-compose.override.yml up rabbitmq  -d --build
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Failed to compose docker Rabbit MQ."
@@ -237,7 +262,8 @@ if ($state.lastSuccessfulCommand -match "docker-compose-portainer") {
         # Docker Compose SiteManagerApi
         if ($state.lastSuccessfulCommand -match "docker-compose-sitemanager") {
             PrintYellow "Docker Compose sitemanager........" 
-            docker-compose --env-file=.env -f .\docker-compose.yml -f .\docker-compose.override.yml up sitemanager.api -d --build
+           Set-Location $config.SrcPath
+          docker-compose --env-file .env -f .\docker-compose.yml -f .\docker-compose.override.yml up sitemanager.api -d --build
             if ($LASTEXITCODE -ne 0) {
                 Write-Error "Failed to compose docker sitemanager"
                 Set-Location "C:\Users\balti\Desktop\quanika-cloud-app Scripts\powershell"
@@ -251,6 +277,8 @@ if ($state.lastSuccessfulCommand -match "docker-compose-portainer") {
           # Docker Compose AccessControl Service
           if ($state.lastSuccessfulCommand -match "docker-compose-accesscontrol") {
             PrintYellow "Docker Compose accesscontrol service........" 
+             Set-Location $config.SrcPath
+
             docker-compose --env-file=.env -f .\docker-compose.yml -f .\docker-compose.override.yml up accesscontrol.api  -d --build
             if ($LASTEXITCODE -ne 0) {
                 Write-Error "Failed to compose docker accesscontrol"
@@ -265,6 +293,8 @@ if ($state.lastSuccessfulCommand -match "docker-compose-portainer") {
           # Docker Compose Api Executor Service
           if ($state.lastSuccessfulCommand -match "docker-compose-apiexecutor") {
             PrintYellow "Docker Compose api executor service........" 
+             Set-Location $config.SrcPath
+
             docker-compose --env-file=.env -f .\docker-compose.yml -f .\docker-compose.override.yml up q.apiexecutor  -d --build
             if ($LASTEXITCODE -ne 0) {
                 Write-Error "Failed to compose docker api executor service"
@@ -279,6 +309,8 @@ if ($state.lastSuccessfulCommand -match "docker-compose-portainer") {
       # Docker Compose Api Event Fetch
       if ($state.lastSuccessfulCommand -match "docker-compose-eventfetch") {
         PrintYellow "Docker Compose event fetch........" 
+        Set-Location $config.SrcPath
+
         docker-compose --env-file=.env -f .\docker-compose.yml -f .\docker-compose.override.yml up q.eventfetch  -d --build
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Failed to compose docker event fetch"
