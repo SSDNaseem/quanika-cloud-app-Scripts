@@ -1,3 +1,12 @@
-{
-    "lastSuccessfulCommand":  "docker-compose-portainer"
+{ 
+    "Server":  "192.168.1.197\\SQLEXPRESS",
+    "Username":  "sa",
+    "Password":  "123456",
+    "SiteManagerDB" :"SiteManagerDB",
+    "AccessControlDB" :"AccessControlDB",
+    "EventDB" :"EventDB",
+    "ApiExecutor" :"ApiExecutor",
+    "Environment" :"Production",
+    "ProjectPath" :"D:\\Project\\src\\Services" , 
+    "SrcPath" :"D:\\Project\\src"  
 }
